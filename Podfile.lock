@@ -1,0 +1,41 @@
+PODS:
+  - Alamofire (5.0.5)
+  - AlamofireNetworkActivityLogger (3.0.0):
+    - Alamofire (~> 5.0.0-rc.2)
+  - AloeStackView (1.2.0)
+  - PromisesObjC (1.2.11)
+  - PromisesSwift (1.2.11):
+    - PromisesObjC (= 1.2.11)
+  - SnapKit (5.0.1)
+  - SwiftLint (0.35.0)
+
+DEPENDENCIES:
+  - Alamofire (~> 5.0.0-rc.2)
+  - AlamofireNetworkActivityLogger (~> 3.0)
+  - AloeStackView
+  - PromisesSwift
+  - SnapKit (~> 5.0.0)
+  - SwiftLint (~> 0.35.0)
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - AlamofireNetworkActivityLogger
+    - AloeStackView
+    - PromisesObjC
+    - PromisesSwift
+    - SnapKit
+    - SwiftLint
+
+SPEC CHECKSUMS:
+  Alamofire: df2f8f826963b08b9a870791ad48e07a10090b2e
+  AlamofireNetworkActivityLogger: 94e8a7d454a4a9800cef1d0c1d3699754493684b
+  AloeStackView: 8a4ce0efa08128dd78d538372f60c76c224034bb
+  PromisesObjC: 8c196f5a328c2cba3e74624585467a557dcb482f
+  PromisesSwift: fed4eb6f7a29846a22624d1b86b77e1dedb88724
+  SnapKit: 97b92857e3df3a0c71833cce143274bf6ef8e5eb
+  SwiftLint: 5553187048b900c91aa03552807681bb6b027846
+
+PODFILE CHECKSUM: ce4d570ff3d49fa70eb53ec3b1021f0c5db960f6
+
+COCOAPODS: 1.9.3
