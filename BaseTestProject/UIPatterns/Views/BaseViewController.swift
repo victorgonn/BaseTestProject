@@ -9,19 +9,52 @@ import Foundation
 import UIKit
 import SnapKit
 
+protocol KeyboardIsUpProtocol {
+    func resizeScroll(keyboardSize: CGFloat?)
+    func keyboardIsOpen(isOpen: Bool)
+}
+
 public class BaseViewController: UIViewController {
     let loadView: LoadingView = LoadingView()
-    
     public var hideNavigationBar: Bool = false
+    var keyboardProtocol: KeyboardIsUpProtocol?
+    
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardShow(notification:)),
+                                               name: UIResponder.keyboardWillShowNotification,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardHide(notification:)),
+                                               name: UIResponder.keyboardWillHideNotification,
+                                               object: nil)
+    }
     
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(self.hideNavigationBar, animated: animated)
-        //navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.font: WIFontStyle.f18SecondaryBold.font]
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.font: FontStyle.f20PrimaryRegular.font]
         
         self.navigationController?.navigationBar.backItem?.title = ""
         self.navigationController?.navigationItem.backBarButtonItem?.title = ""
         self.view.backgroundColor = UIColor.Theme.background
+        configureBackButton()
+    }
+    
+    public override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.configureTapAction()
+    }
+    
+    public func configureTapAction() {
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(keyboardDismiss))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc private func keyboardDismiss() {
+        view.endEditing(true)
     }
     
     override public func viewWillDisappear(_ animated: Bool) {
@@ -54,13 +87,23 @@ public class BaseViewController: UIViewController {
         UINavigationBar.appearance().backgroundColor = .clear
     }
     
+    @objc func keyboardShow(notification: NSNotification) {
+        keyboardProtocol?.keyboardIsOpen(isOpen: true)
+    }
+    
+    @objc func keyboardHide(notification: NSNotification) {
+        self.keyboardProtocol?.keyboardIsOpen(isOpen: false)
+    }
+    
     func adjustTableViewInsets(scrollView: UIScrollView) {
         let zeroContentInsets = UIEdgeInsets.zero
         scrollView.contentInset = zeroContentInsets
         scrollView.scrollIndicatorInsets = zeroContentInsets
     }
-    
-    // MARK: Screen Routing Stack Functions
+}
+
+// MARK: Functions
+extension BaseViewController {
     public func getPreviusViewControllerIndex() -> Int? {
         guard let viewControllersOnNavStack = self.navigationController?.viewControllers else {
             return nil
@@ -89,7 +132,6 @@ public class BaseViewController: UIViewController {
                                                        animated: true)
     }
     
-    // MARK: Screen Base Actions
     public func showLoading(_ load: Bool) {
         if load {
             self.view.addSubview(self.loadView)
@@ -105,6 +147,4 @@ public class BaseViewController: UIViewController {
             loadView.snp.removeConstraints()
         }
     }
-
 }
-

@@ -9,10 +9,11 @@ import Foundation
 import Promises
 
 class LoginViewModel {
+    var email: String = ""
     var password: String = ""
     
-//    func challengePassword() -> Promise<PassChallengeReponse> {
-//        let request = PassChallengeRequest(operation: .changePassword, password: self.password)
-//        return ProfileApiClient.challengePassword(request: request)
-//    }
+    func doLogin() -> Promise<Void> {
+        let request = LoginRequest(email: self.email, password: self.password)
+        return ServiceApiClient.doLogin(request: request)
+    }
 }

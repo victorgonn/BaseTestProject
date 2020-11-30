@@ -28,7 +28,7 @@ class LoadingView: UIView, ConfigurableView {
     }
 
     fileprivate func customizeView() {
-        backgroundColor = UIColor(red: 0.898, green: 0.898, blue: 0.898, alpha: 1)
+        backgroundColor = UIColor.black.withAlphaComponent(0.6)
     }
     
     func buildViewHierarchy() {

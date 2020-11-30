@@ -1,13 +1,13 @@
 //
-//  LoginCoordinator.swift
+//  HomeCoordinator.swift
 //  BaseTestProject
 //
-//  Created by Victor Goncalves Valfre on 26/11/20.
+//  Created by Victor Goncalves Valfre on 30/11/20.
 //
 
 import UIKit
 
-class LoginCoordinator: Coordinator {
+class HomeCoordinator: Coordinator {
     private var presenter: UINavigationController
 
     init(presenter: UINavigationController) {
@@ -16,7 +16,7 @@ class LoginCoordinator: Coordinator {
     }
     
     func start() {
-        let viewController = LoginViewController()
+        let viewController = HomeViewController()
         viewController.delegate = self
         self.presenter.pushViewController(viewController, animated: true)
     }
@@ -26,13 +26,9 @@ class LoginCoordinator: Coordinator {
     }
 }
 
-extension LoginCoordinator: LoginViewControllerDelegate {
-    func backNavigationMove() {
-        presenter.popViewController(animated: true)
-    }
-    
-    func navigateToHome() {
-        let coordinator = HomeCoordinator(presenter: self.presenter)
+extension HomeCoordinator: HomeViewControllerDelegate {
+    func navigateToDetail(id: Int, color: UIColor) {
+        let coordinator = DetailCoordinator(presenter: self.presenter, id: id, color: color)
         coordinator.start()
     }
 }

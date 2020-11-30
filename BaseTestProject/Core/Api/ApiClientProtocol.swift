@@ -34,6 +34,7 @@ extension ApiClient {
                     return error
                 })
 
+                Self.updateUserData(headerData: response.response?.allHeaderFields)
                 completion(result)
         }
     }
@@ -58,6 +59,7 @@ extension ApiClient {
                         return error
                     })
 
+                    Self.updateUserData(headerData: response.response?.allHeaderFields)
                     switch result {
                     case .success(let data):
                         fulfill(data)
@@ -85,7 +87,7 @@ extension ApiClient {
 
                         return error
                     })
-
+                    Self.updateUserData(headerData: response.response?.allHeaderFields)
                     switch result {
                     case .success:
                         fulfill(Void())
@@ -93,6 +95,33 @@ extension ApiClient {
                         reject(error)
                     }
                     
+            }
+        }
+    }
+    
+    
+    public static func updateUserData(headerData: [AnyHashable : Any]?) {
+        if let header = headerData as? [String: Any] {
+            for (key, value) in header {
+                switch key {
+                case "access-token":
+                    debugPrint("token:", value)
+                    if let token = value as? String {
+                        UserDefaultsUtils.saveAccessToken(value: token)
+                    }
+                case "uid":
+                    debugPrint("uid:", value)
+                    if let uid = value as? String {
+                        UserDefaultsUtils.saveUid(value: uid)
+                    }
+                case "client":
+                    debugPrint("client:", value)
+                    if let client = value as? String {
+                        UserDefaultsUtils.saveClient(value: client)
+                    }
+                default:
+                    break
+                }
             }
         }
     }

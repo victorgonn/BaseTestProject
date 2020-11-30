@@ -18,20 +18,15 @@ public protocol TextFieldActionProtocol {
     func addClickAction()
 }
 
-public typealias TextFieldClickAction = () -> Void
-
 public class TextField: FocusTextField, ConfigurableView {
-    
     public lazy var titleLabel: Label = {
         let titleLabel = Label()
         return titleLabel
     }()
-    
     public lazy var helpLabel: Label = {
         let textLabel = Label()
         return textLabel
     }()
-    
     public lazy var textField: UITextField = {
         let textField = UITextField()
         textField.backgroundColor = UIColor.Theme.fieldBackground
@@ -81,13 +76,11 @@ public class TextField: FocusTextField, ConfigurableView {
     public var defaultButtonText: String?
 
     public var baseProtocol: TextFieldProtocol?
-    public var onClickAction: TextFieldClickAction?
     public var actionProtocol: TextFieldActionProtocol?
         
     override init(frame: CGRect) {
         super.init(frame: frame)
         customizeView()
-        setTextFieldAction()
     }
     
     required init?(coder: NSCoder) {
@@ -97,9 +90,12 @@ public class TextField: FocusTextField, ConfigurableView {
     fileprivate func customizeView() {
         setupView()
         isUserInteractionEnabled = true
-        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(onTypeInView)))
         self.layer.masksToBounds = true
         self.clipsToBounds = true
+        
+        textField.addTarget(self, action: #selector(onChange), for: .editingChanged)
+        textField.addTarget(self, action: #selector(editingDidBegin), for: .editingDidBegin)
+        textField.addTarget(self, action: #selector(editingDidEnd), for: .editingDidEnd)
     }
     
     public func buildViewHierarchy() {
@@ -138,7 +134,10 @@ public class TextField: FocusTextField, ConfigurableView {
         }
         return success
     }
-    
+}
+
+// MARK: - Functions
+extension TextField {
     public func disableTextField(_ disable: Bool) {
         self.textField.isUserInteractionEnabled = disable
     }
@@ -147,7 +146,7 @@ public class TextField: FocusTextField, ConfigurableView {
         textField.tag = tag
     }
 
-    public func setTextField(with text: String) {
+    public func setTextFieldValue(with text: String) {
         textField.text = text
     }
 
@@ -173,6 +172,7 @@ public class TextField: FocusTextField, ConfigurableView {
         textField.keyboardType = keyboard
         textField.isSecureTextEntry = isSecure
         textField.isEnabled = isEnabled
+        textField.tintColor = UIColor.Theme.primary
 
         if let hint =  hint {
             displayHint(hint)
@@ -253,27 +253,31 @@ public class TextField: FocusTextField, ConfigurableView {
         button.setImage(i, for: .normal)
     }
 
-    public func applyCommunication() {
-        baseProtocol?.didChangeValue()
+    func resetHint() {
+        helpLabel.isHidden = true
+        helpLabel.setColor(UIColor.Theme.textColor1)
+        helpLabel.textAlignment = .left
+        helpLabel.text = ""
+        
+        textField.layer.borderColor = UIColor.clear.cgColor
+        textField.layer.borderWidth = 0
     }
-
+    
     func displayError(_ error: String) {
         helpLabel.isHidden = false
+        helpLabel.setColor(UIColor.Theme.warming)
+        helpLabel.textAlignment = .right
         helpLabel.text = error
+        
+        textField.layer.borderColor = UIColor.Theme.warming.cgColor
+        textField.layer.borderWidth = 1.0
     }
 
     func displayHint(_ hint: String) {
         helpLabel.isHidden = false
+        helpLabel.setColor(UIColor.Theme.textColor1)
+        helpLabel.textAlignment = .right
         helpLabel.text = hint
-    }
-
-    public func onFocusChange() {
-        // Fazer algo quando perder o focus (mudar stylo se necessario)
-    }
-    
-    fileprivate func setTextFieldAction() {
-        textField.addTarget(self, action: #selector(editingDidBegin), for: .editingDidBegin)
-        textField.addTarget(self, action: #selector(editingDidEnd), for: .editingDidEnd)
     }
 
     @objc func editingDidBegin() {
@@ -290,9 +294,9 @@ public class TextField: FocusTextField, ConfigurableView {
     @objc func editingDidEnd() {
         self.focusDelegate?.onRemoveFocus(view: self)
     }
-
-    @objc func onTypeInView(_ sender: Any) {
-        self.onClickAction?()
+    
+    @objc func onChange() {
+        baseProtocol?.didChangeValue()
     }
 
     public func setFocus() {

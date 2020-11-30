@@ -9,10 +9,6 @@ import Foundation
 import UIKit
 import SnapKit
 
-protocol KeyboardIsUpProtocol {
-    func resizeScroll(keyboardSize: CGFloat?)
-}
-
 public protocol TextFieldFocusProtocol {
     func onFocusTextField(view: FocusTextField)
     func onRemoveFocus(view: FocusTextField)
@@ -37,7 +33,7 @@ public class BaseScrollViewController: BaseViewController, TextFieldFocusProtoco
     public var keyboardHeight: CGFloat!
     public var distanceBottomCalculus: ((FocusTextField) -> CGFloat)!
     
-    var keyboardProtocol: KeyboardIsUpProtocol?
+    var ignoreTopSafeAreaMargin: Bool = false
     
     public func onFocusTextField(view: FocusTextField) {
         self.focusedField = view
@@ -57,10 +53,8 @@ public class BaseScrollViewController: BaseViewController, TextFieldFocusProtoco
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-        self.configureKeyboardShowAction()
-        self.configureKeyboardHideAction()
-        //automaticallyAdjustsScrollViewInsets = false
-        scrollView.contentInsetAdjustmentBehavior = UIScrollView.ContentInsetAdjustmentBehavior.never
+//        self.configureKeyboardShowAction()
+//        self.configureKeyboardHideAction()
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(keyboardShow(notification:)),
                                                name: UIResponder.keyboardWillShowNotification,
@@ -73,13 +67,7 @@ public class BaseScrollViewController: BaseViewController, TextFieldFocusProtoco
                                                selector: #selector(keyboardWillChangeFrame(notification:)),
                                                name: UIResponder.keyboardWillChangeFrameNotification,
                                                object: nil)
-        self.view.backgroundColor = .white
-        //self.automaticallyAdjustsScrollViewInsets = false
-    }
-    
-    public override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        self.configureTapAction()
+        automaticallyAdjustsScrollViewInsets = false
     }
       
     override public func viewWillDisappear(_ animated: Bool) {
@@ -88,7 +76,6 @@ public class BaseScrollViewController: BaseViewController, TextFieldFocusProtoco
     }
     
     // MARK: Build Functions
-    
     public func buildViewHierarchy() {
         self.scrollView = UIScrollView()
         self.scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -105,24 +92,25 @@ public class BaseScrollViewController: BaseViewController, TextFieldFocusProtoco
     }
     
     public func setupConstraints() {
-        NSLayoutConstraint.activate([
-            self.scrollView.topAnchor.constraint(equalTo: self.topLayoutGuide.bottomAnchor, constant: 0),
-            self.scrollView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 0),
-            self.view.trailingAnchor.constraint(equalTo: self.scrollView.trailingAnchor, constant: 0),
-            self.view.bottomAnchor.constraint(equalTo: self.scrollView.bottomAnchor, constant: 0)
-        ])
+        scrollView.snp.makeConstraints { (make) in
+            make.top.equalTo(self.ignoreTopSafeAreaMargin == true ? self.view.snp.top : self.view.safeAreaLayoutGuide.snp.top)
+            make.left.equalTo(self.view.snp.left)
+            make.right.equalTo(self.view.snp.right)
+            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+        }
+    
+        nextStepButton.snp.makeConstraints { (make) in
+            make.top.equalTo(gradientView.snp.top).offset(10)
+            make.left.equalTo(gradientView.snp.left).offset(28)
+            make.right.equalTo(gradientView.snp.right).offset(-28)
+            make.bottom.equalTo(gradientView.snp.bottom).offset(-24)
+            make.height.equalTo(48)
+        }
         
-        NSLayoutConstraint.activate([
-            self.nextStepButton.bottomAnchor.constraint(equalTo: self.gradientView.bottomAnchor, constant: -24),
-            self.nextStepButton.trailingAnchor.constraint(equalTo: self.gradientView.trailingAnchor, constant: -24),
-            self.nextStepButton.leadingAnchor.constraint(equalTo: self.gradientView.leadingAnchor, constant: 24),
-            self.nextStepButton.topAnchor.constraint(equalTo: self.gradientView.topAnchor, constant: 10)
-        ])
-        
-        NSLayoutConstraint.activate([
-            self.gradientView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 0),
-            self.gradientView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: 0)
-        ])
+        gradientView.snp.makeConstraints { (make) in
+            make.left.equalTo(self.view.snp.left)
+            make.right.equalTo(self.view.snp.right)
+        }
         
         let marginGuide = self.view.layoutMarginsGuide
         self.buttonBottomConstraint = NSLayoutConstraint(item: marginGuide as Any,
@@ -179,43 +167,35 @@ public class BaseScrollViewController: BaseViewController, TextFieldFocusProtoco
         }
     }
     
-    @objc func keyboardShow(notification: NSNotification) {
+    @objc override func keyboardShow(notification: NSNotification) {
         showKeyboardAction?(notification)
+        keyboardProtocol?.keyboardIsOpen(isOpen: true)
     }
     
-    @objc func keyboardHide(notification: NSNotification) {
+    @objc override func keyboardHide(notification: NSNotification) {
         hideKeyboardAction?(notification)
+        self.keyboardProtocol?.keyboardIsOpen(isOpen: false)
     }
     
     @objc func keyboardWillChangeFrame(notification: NSNotification) {
         showKeyboardAction?(notification)
     }
     
-    public func configureTapAction() {
-        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(keyboardDismiss))
-        tap.cancelsTouchesInView = false
-        view.addGestureRecognizer(tap)
-    }
-    
-    @objc private func keyboardDismiss() {
-        view.endEditing(true)
-    }
-    
-    public func setFocusOnField(uiField: TextField?) {
-        if let selectedField = uiField {
-           _ = selectedField.becomeFirstResponder()
-        }
-    }
-    
     public func addContentView(_ view: UIView) {
         self.scrollView.addSubview(view)
-        NSLayoutConstraint.activate([
-            view.topAnchor.constraint(equalTo: self.scrollView.topAnchor, constant: 0),
-            view.leadingAnchor.constraint(equalTo: self.scrollView.leadingAnchor, constant: 0),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0),
-            self.scrollView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 1)
-        ])
+        view.snp.makeConstraints { (make) in
+            make.top.equalTo(self.scrollView.snp.top)
+            make.left.equalTo(self.scrollView.snp.left)
+            make.right.equalTo(self.scrollView.snp.right)
+        }
+        
+        scrollView.snp.remakeConstraints{ (make) in
+            make.top.equalTo(self.ignoreTopSafeAreaMargin == true ? self.view.snp.top : self.view.safeAreaLayoutGuide.snp.top)
+            make.left.equalTo(self.view.snp.left)
+            make.right.equalTo(self.view.snp.right)
+            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+            make.width.equalTo(view.snp.width).multipliedBy(1)
+        }
     }
     
     @objc private func nextStepButtonAction() {

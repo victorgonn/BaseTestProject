@@ -19,7 +19,7 @@ public class Label: UILabel {
         textColor = color
         realValue = text
         self.enabledUppercase = enabledUppercase
-        self.text = text
+        self.text = self.enabledUppercase == true ? text.uppercased() : text
     }
     
     public func setText(_ text: String) {

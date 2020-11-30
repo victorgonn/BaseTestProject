@@ -63,5 +63,11 @@
 		<string>Rubik-Italic-VariableFont_wght.ttf</string>
 		<string>Rubik-VariableFont_wght.ttf</string>
 	</array>
+	<key>Enviroment</key>
+	<string>$(ENVIRONMENT)</string>
+	<key>BaseUrl</key>
+	<string>$(BASE_URL)</string>
+	<key>HttpScheme</key>
+	<string>$(HTTP_SCHEME)</string>
 </dict>
 </plist>

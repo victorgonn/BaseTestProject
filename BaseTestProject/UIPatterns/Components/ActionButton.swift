@@ -30,17 +30,5 @@ public class ActionButton: UIButton {
         titleLabel.textAlignment = .center
         titleLabel.tintColor = UIColor.Theme.textColor2
         titleLabel.font = FontStyle.f16PrimaryRegular.font
-        setSizeConstraints()
-    }
-
-    public func setSizeConstraints() {
-        let heightConstraint =  NSLayoutConstraint(item: self,
-                                                   attribute: .height,
-                                                   relatedBy: .equal,
-                                                   toItem: nil,
-                                                   attribute: .notAnAttribute,
-                                                   multiplier: 1,
-                                                   constant: 48)
-        NSLayoutConstraint.activate([heightConstraint])
     }
 }
