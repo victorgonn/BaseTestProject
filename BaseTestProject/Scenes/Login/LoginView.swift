@@ -56,11 +56,9 @@ class LoginView: BaseView {
         self.translatesAutoresizingMaskIntoConstraints = false
         emailField.configureTextField(text: "Email", hint: nil, maxLeght: nil)
         emailField.setTextFieldTag(with: 1)
-        emailField.textField.text = "testeapple@ioasys.com.br"
         passwordField.configureTextField(text: "Senha", hint: nil, maxLeght: nil)
         passwordField.setPasswordLayout()
         passwordField.setTextFieldTag(with: 2)
-        passwordField.textField.text = "12341234"
         
         actionButton.configureButton(title: "ENTRAR")
         actionButton.isEnabled = true

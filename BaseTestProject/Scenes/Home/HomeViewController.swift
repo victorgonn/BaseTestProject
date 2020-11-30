@@ -20,6 +20,7 @@ public class HomeViewController: BaseViewController {
     var viewModel: HomeViewModel = HomeViewModel()
     var delegate: HomeViewControllerDelegate?
     var defaultCellId: String = "DefaultCellId"
+    var timerToSearch: Timer?
 
     public override func loadView() {
         super.loadView()
@@ -27,6 +28,8 @@ public class HomeViewController: BaseViewController {
         headerView = HomeView()
         headerView.translatesAutoresizingMaskIntoConstraints = false
         keyboardProtocol = self
+        headerView.searchField.textField.delegate = self
+        headerView.searchField.textField.addTarget(self, action: #selector(textFieldDidEditingChanged), for: .editingChanged)
         
         tableView = UITableView()
         tableView.backgroundColor = UIColor.clear
@@ -43,10 +46,9 @@ public class HomeViewController: BaseViewController {
     
     public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        doSearch()
     }
     
-    public func doSearch() {
+    @objc public func doSearch() {
         self.headerView.rebuildHeaderConstraints(headerType: .thin)
         self.viewModel.searched = true
         self.viewModel.getEnterprises().then(on: .main) { response in
@@ -79,6 +81,29 @@ public class HomeViewController: BaseViewController {
     }
 }
 
+extension HomeViewController: UITextFieldDelegate {
+    public func textFieldDidBeginEditing(_ textField: UITextField) {
+        if let timer = self.timerToSearch {
+            timer.invalidate()
+            self.timerToSearch = nil
+        }
+    }
+    
+    public func textFieldDidEndEditing(_ textField: UITextField) {
+        self.viewModel.searchString = textField.text ?? ""
+        self.timerToSearch = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(doSearch), userInfo: nil, repeats: false)
+    }
+    
+    @objc func textFieldDidEditingChanged(_ textField: UITextField) {
+        if let timer = self.timerToSearch {
+            timer.invalidate()
+            self.timerToSearch = nil
+        }
+
+        self.timerToSearch = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(doSearch), userInfo: nil, repeats: false)
+    }
+}
+
 extension HomeViewController: KeyboardIsUpProtocol {
     func resizeScroll(keyboardSize: CGFloat?) {
         //resizeScroll
@@ -97,7 +122,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     public func numberOfSections(in tableView: UITableView) -> Int {
-        return self.viewModel.filtredData.count
+        return self.viewModel.searched ? self.viewModel.filtredData.count + 1 : 0
     }
     
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -111,7 +136,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: defaultCellId, for: indexPath)
-            let item = self.viewModel.filtredData[indexPath.section]
+            let item = self.viewModel.filtredData[indexPath.section-1]
             cell.backgroundColor = UIColor.random()
             cell.textLabel?.text = item.enterprise_name?.uppercased() ?? ""
             cell.textLabel?.font = FontStyle.f18PrimaryBold.font
