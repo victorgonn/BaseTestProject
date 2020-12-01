@@ -126,24 +126,15 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if indexPath.section == 0 {
-            let cell = tableView.dequeueReusableCell(withIdentifier: defaultCellId, for: indexPath)
-            cell.backgroundColor = UIColor.Theme.background
-            cell.textLabel?.text = "\(self.viewModel.filtredData.count) resultados encontrados"
-            cell.textLabel?.font = FontStyle.f14PrimaryRegular.font
-            cell.textLabel?.textColor = UIColor.Theme.textColor1
-            cell.textLabel?.textAlignment = .left
-            return cell
-        } else {
-            let cell = tableView.dequeueReusableCell(withIdentifier: defaultCellId, for: indexPath)
-            let item = self.viewModel.filtredData[indexPath.section-1]
-            cell.backgroundColor = UIColor.random()
-            cell.textLabel?.text = item.enterprise_name?.uppercased() ?? ""
-            cell.textLabel?.font = FontStyle.f18PrimaryBold.font
-            cell.textLabel?.textColor = UIColor.Theme.textColor2
-            cell.textLabel?.textAlignment = .center
-            return cell
-        }
+        let cell = tableView.dequeueReusableCell(withIdentifier: defaultCellId, for: indexPath)
+        let item = indexPath.section == 0 ? nil : self.viewModel.filtredData[indexPath.section-1]
+        cell.backgroundColor =  indexPath.section == 0 ? UIColor.Theme.background : UIColor.random()
+        cell.textLabel?.text = indexPath.section == 0 ? "\(self.viewModel.filtredData.count) resultados encontrados" : item?.enterprise_name?.uppercased() ?? ""
+        cell.textLabel?.font = indexPath.section == 0 ? FontStyle.f14PrimaryRegular.font : FontStyle.f18PrimaryBold.font
+        cell.textLabel?.textColor = indexPath.section == 0 ? UIColor.Theme.textColor1 : UIColor.Theme.textColor2
+        cell.textLabel?.textAlignment = indexPath.section == 0 ? .left : .center
+        cell.selectionStyle = UITableViewCell.SelectionStyle.none
+        return cell
     }
     
     public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -155,8 +146,10 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let cell = tableView.dequeueReusableCell(withIdentifier: defaultCellId, for: indexPath)
-        let item = self.viewModel.filtredData[indexPath.section]
-        self.delegate?.navigateToDetail(id: item.id, color: cell.backgroundColor ?? UIColor.clear)
+        if indexPath.section > 0 {
+            let cell = tableView.dequeueReusableCell(withIdentifier: defaultCellId, for: indexPath)
+            let item = self.viewModel.filtredData[indexPath.section-1]
+            self.delegate?.navigateToDetail(id: item.id, color: cell.backgroundColor ?? UIColor.clear)
+        }
     }
 }
